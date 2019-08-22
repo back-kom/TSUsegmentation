@@ -32,6 +32,7 @@ def intialize():        # initialize program
     # img_matrix = gaussian_filter(img_matrix, sigma=1, mode="constant", cval=0.0, truncate=4.0)
     unit = int(math.sqrt(nx))
     df = pd.DataFrame({"Name":[fname]})
+    df['region number in divide'] = "8/8"
     global_regionid = -1
 
 
@@ -168,7 +169,8 @@ def gen_regions(matrix,tArray, g_regionid):      # generate regions for each blo
 def merge_region(region_to_lm, regions, temp_image, n_regions):
     t1 = datetime.now()
     # reorder M in increasing order based on density,
-    region_to_lm.reverse()     # mSorted=sorted(region_to_lm, key=lambda voxel: voxel.density)
+    temp = sorted(region_to_lm, key=lambda voxel: voxel.density)  # mSorted=sorted(region_to_lm, key=lambda voxel: voxel.density)
+    region_to_lm = temp
     t2 = datetime.now()
     delta = t2 - t1
     df['region sort']=delta
@@ -252,11 +254,11 @@ def reverse_coordinate(temp_M_region, temp_regions, i_step, j_step, k_step):
 def outputregion(regions, shape):       # output segment regions
     for key in regions:
         fname='emdr'+str(key)+'.mrc'
-        mrc_new = mrcfile.new('mrcfilestest/emd4297/{}'.format(fname), overwrite=True)
+        mrc_new = mrcfile.new('mrcfilestest/emd4297divide89ng/{}'.format(fname), overwrite=True)
         mrc_new.set_data(np.zeros(shape, dtype=np.float32))
         mrc_new.voxel_size = mrc.voxel_size
         for v in regions[key]:
-            print(key, v.x_coordinate, v.y_coordinate, v.z_coordinate, v.density)
+            # print(key, v.x_coordinate, v.y_coordinate, v.z_coordinate, v.density)
             mrc_new.data[v.x_coordinate, v.y_coordinate, v.z_coordinate] = v.density
         mrc_new.close()
 
@@ -274,7 +276,7 @@ for k in range(0, nz-unit, unit):
             tArray = readData(temp_matrix,threshold,cube_id)
             temp_region_to_lm, temp_regions = gen_regions(temp_matrix,tArray,global_regionid)
             if len(temp_region_to_lm) > 0:
-                temp_M_region, temp_regions = merge_region(temp_region_to_lm, temp_regions, temp_matrix, 3)
+                temp_M_region, temp_regions = merge_region(temp_region_to_lm, temp_regions, temp_matrix, 8)
                 #print(temp_regions)
                 temp_M_region, temp_regions = reverse_coordinate(temp_M_region, temp_regions, i, j, k)
                 regions.update(temp_regions)
@@ -285,8 +287,9 @@ for k in range(0, nz-unit, unit):
 print("length of local max: " + str(len(region_to_lm)))
 print("number of regions:" + str(len(regions)))
 
-region_to_lm, regions = merge_region(region_to_lm, regions, img_matrix, 8)
+region_to_lm, regions = merge_region(region_to_lm, regions, img_matrix, 9)
 outputregion(regions, shape)
+df.to_csv('emd4297divide_new_gradient_output08212019.csv')
 print("done")
 
 # tArray[0]=tArray[0]+(j,)
