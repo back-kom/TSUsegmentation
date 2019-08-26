@@ -1,0 +1,47 @@
+,Name,read data,sort,get_region,region sort,smooth0,density updated0,merged0,smooth1,density updated1,merged1,smooth2,density updated2,merged2,smooth3,density updated3,merged3,smooth4,density updated4,merged4,smooth5,density updated5,merged5,smooth6,density updated6,merged6,smooth7,density updated7,merged7,smooth8,density updated8,merged8,smooth9,density updated9,merged9,smooth10,density updated10,merged10,smooth11,density updated11,merged11,smooth12,density updated12,merged12,smooth13,density updated13,merged13
+0,mrcfiles/emd0339.mrc,0 days 00:00:30.664557000,0 days 00:01:13.409844000,0 days 00:18:47.973413000,0 days 00:00:00.001004000,0 days 00:00:00.335787000,0 days 00:00:00.111936000,0 days 04:12:01.178617000,0 days 00:00:00.345785000,0 days 00:00:00.049971000,0 days 01:02:25.347943000,0 days 00:00:00.316805000,0 days 00:00:00.026983000,0 days 00:15:18.590299000,0 days 00:00:00.324813000,0 days 00:00:00.011992000,0 days 00:03:50.535180000,0 days 00:00:00.321831000,0 days 00:00:00.005978000,0 days 00:00:56.515797000,0 days 00:00:00.393758000,0 days 00:00:00.005013000,0 days 00:00:13.522187000,0 days 00:00:00.325827000,0 days 00:00:00.001999000,0 days 00:00:04.394452000,0 days 00:00:00.373794000,0 days 00:00:00.000990000,0 days 00:00:02.999260000,0 days 00:00:00.327812000,0 days 00:00:00.001012000,0 days 00:00:01.282260000,0 days 00:00:00.385763000,0 days 00:00:00.000000000,0 days 00:00:00.331821000,0 days 00:00:00.389781000,0 days 00:00:00.000987000,0 days 00:00:00.641621000,0 days 00:00:00.385792000,0 days 00:00:00.000984000,0 days 00:00:00.065976000,0 days 00:00:00.361777000,0 days 00:00:00.000000000,0 days 00:00:00.320830000,0 days 00:00:00.391761000,0 days 00:00:00.000000000,0 days 00:00:00.011992000
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,emd4297,,,05:11.6,0:00:00,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,"generate regions: 0:05:11.556826
+region sorte: 0:00:00
+smooth0: 0:00:00.235866
+density updated0: 0:00:00.020987
+merged0: 0:04:33.656188
+1
+smooth1: 0:00:00.174901
+density updated1: 0:00:00.006997
+merged1: 0:01:05.761338
+2
+smooth2: 0:00:00.187883
+density updated2: 0:00:00.004011
+merged2: 0:00:16.134684
+3
+smooth3: 0:00:00.183881
+density updated3: 0:00:00.001999
+merged3: 0:00:04.621334
+4
+smooth4: 0:00:00.201889
+density updated4: 0:00:00.000998
+merged4: 0:00:01.264271
+5
+smooth5: 0:00:00.149914
+density updated5: 0:00:00.000999
+merged5: 0:00:00.433769
+6
+smooth6: 0:00:00.155892
+density updated6: 0:00:00.000998
+merged6: 0:00:00.182892
+7
+smooth7: 0:00:00.194885
+density updated7: 0:00:00
+merged7: 0:00:00.096946
+8
+smooth8: 0:00:00.184892
+density updated8: 0:00:00
+merged8: 0:00:00.324814
+9
+smooth9: 0:00:00.204890
+density updated9: 0:00:00
+merged9: 0:00:00.040975
+10
+9",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
