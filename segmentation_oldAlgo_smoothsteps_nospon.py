@@ -61,6 +61,7 @@ def neighbors(matrix: object, x: object, y: object, z: object) -> object:   # re
 
 def gradient(mi, mj):       # calculate the gradient
     distance = pow((mi.x_coordinate - mj.x_coordinate), 2) + pow((mi.y_coordinate - mj.y_coordinate), 2) + pow((mi.z_coordinate - mj.z_coordinate), 2)
+    distance = math.sqrt(distance)
     return (mj.density - mi.density)/distance
 
 
@@ -269,7 +270,7 @@ def outputregion(regions, shape):       # output segment regions
     for key in regions:
         fname='emdr'+str(key)+'.mrc'
         # generate mrcfile for each region
-        mrc_new = mrcfile.new('mrcfilestest/emd4297smoothstepssingle_nospon/{}'.format(fname), overwrite=True)
+        mrc_new = mrcfile.new('mrcfilestest/emd4297smoothstepssingle_nospon_half/{}'.format(fname), overwrite=True)
         mrc_new.set_data(np.zeros(shape, dtype=np.float32))
         mrc_new.voxel_size = mrc.voxel_size
         for v in regions[key]:

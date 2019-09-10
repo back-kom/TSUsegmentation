@@ -23,8 +23,8 @@ def intialize():        # initialize program
     fname = 'mrcfiles/emd4297.mrc'
     mrc = mrcfile.open(fname, mode='r+')
     img_matrix = np.copy(mrc.data)
-    img_matrix = gaussian_filter(img_matrix, sigma=1, mode="constant", cval=0.0, truncate=4.0)
-    img_matrix = gaussian_filter(img_matrix, sigma=1, mode="constant", cval=0.0, truncate=4.0)
+    for i in range(3):
+        img_matrix = gaussian_filter(img_matrix, sigma=1, mode="constant", cval=0.0, truncate=4.0)
     threshold = img_matrix.mean()
     nx = mrc.header.nx
     ny = mrc.header.ny
@@ -61,6 +61,7 @@ def neighbors(matrix: object, x: object, y: object, z: object) -> object:   # re
 
 def gradient(mi, mj):       # calculate the gradient
     distance = pow((mi.x_coordinate - mj.x_coordinate), 2) + pow((mi.y_coordinate - mj.y_coordinate), 2) + pow((mi.z_coordinate - mj.z_coordinate), 2)
+    distance = distance ** (2/3)
     return (mj.density - mi.density)/distance
 
 
@@ -269,7 +270,7 @@ def outputregion(regions, shape):       # output segment regions
     for key in regions:
         fname='emdr'+str(key)+'.mrc'
         # generate mrcfile for each region
-        mrc_new = mrcfile.new('mrcfilestest/emd4297smoothtwicesingle_nospon/{}'.format(fname), overwrite=True)
+        mrc_new = mrcfile.new('mrcfilestest/emd4297smooththreesingle_nospon_2_3/{}'.format(fname), overwrite=True)
         mrc_new.set_data(np.zeros(shape, dtype=np.float32))
         mrc_new.voxel_size = mrc.voxel_size
         for v in regions[key]:

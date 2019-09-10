@@ -61,6 +61,7 @@ def neighbors(matrix: object, x: object, y: object, z: object) -> object:   # re
 
 def gradient(mi, mj):       # calculate the gradient
     distance = pow((mi.x_coordinate - mj.x_coordinate), 2) + pow((mi.y_coordinate - mj.y_coordinate), 2) + pow((mi.z_coordinate - mj.z_coordinate), 2)
+    distance = math.sqrt(distance)
     return (mj.density - mi.density)/distance
 
 
@@ -163,22 +164,25 @@ def merge_region(M_regions, regions):
     count = 0
     # imgmatrix = img_matrix
     while len(M_regions) > 15:
+        p = len(M_regions)
+        q = int((1 + p) / 2)
         # t1 = datetime.now()
-        # # imgmatrix = gaussian_filter(imgmatrix, sigma=1, mode="constant", cval=0.0, truncate=4.0)
+        if (count%2==0):
+
+            imgmatrix = gaussian_filter(imgmatrix, sigma=1, mode="constant", cval=0.0, truncate=4.0)
         # t2 = datetime.now()
         # delta = t2 - t1
         # smooth = 'smooth' + str(count)
         # df[smooth]=delta
         # # print(smooth + ": " + str(delta))
-        p = len(M_regions)
-        q = int((1 + p) / 2)
+
         # t1 = datetime.now()
         # # update density after smoothing
-        # for i in range(0, p):
-        #     xc = M_regions[i].x_coordinate
-        #     yc = M_regions[i].y_coordinate
-        #     zc = M_regions[i].z_coordinate
-        #     M_regions[i].density = imgmatrix[xc, yc, zc]
+            for i in range(0, p):
+                xc = M_regions[i].x_coordinate
+                yc = M_regions[i].y_coordinate
+                zc = M_regions[i].z_coordinate
+                M_regions[i].density = imgmatrix[xc, yc, zc]
         #
         # t2 = datetime.now()
         # delta = t2 - t1
@@ -207,6 +211,7 @@ def merge_region(M_regions, regions):
             regions = delete_key(temp, regions)
             # t5 = datetime.now()
         del M_regions[0:q]
+        count += 1
 
     num_region = len(M_regions)
     if num_region > 8:
@@ -269,7 +274,7 @@ def outputregion(regions, shape):       # output segment regions
     for key in regions:
         fname='emdr'+str(key)+'.mrc'
         # generate mrcfile for each region
-        mrc_new = mrcfile.new('mrcfilestest/emd4297smoothoncesingle_nospon/{}'.format(fname), overwrite=True)
+        mrc_new = mrcfile.new('mrcfilestest/emd4297smoothoncesingle_nospon_half/{}'.format(fname), overwrite=True)
         mrc_new.set_data(np.zeros(shape, dtype=np.float32))
         mrc_new.voxel_size = mrc.voxel_size
         for v in regions[key]:
