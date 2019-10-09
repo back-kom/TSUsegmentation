@@ -23,8 +23,8 @@ def intialize():        # initialize program
     fname = 'mrcfiles/emd4297.mrc'
     mrc = mrcfile.open(fname, mode='r+')
     img_matrix = np.copy(mrc.data)
-    for i in range(3):
-        img_matrix = gaussian_filter(img_matrix, sigma=1, mode="constant", cval=0.0, truncate=4.0)
+    # for i in range(3):
+    #     img_matrix = gaussian_filter(img_matrix, sigma=1, mode="constant", cval=0.0, truncate=4.0)
     threshold = img_matrix.mean()
     nx = mrc.header.nx
     ny = mrc.header.ny
@@ -59,11 +59,41 @@ def neighbors(matrix: object, x: object, y: object, z: object) -> object:   # re
     return neighbor
 
 
-def gradient(mi, mj):       # calculate the gradient
-    distance = pow((mi.x_coordinate - mj.x_coordinate), 2) + pow((mi.y_coordinate - mj.y_coordinate), 2) + pow((mi.z_coordinate - mj.z_coordinate), 2)
-    distance **= 2 / 3
-    return (mj.density - mi.density)/distance
+def gradient(mi, mj, param):       # calculate the gradient
+    distance = math.sqrt(pow((mi.x_coordinate - mj.x_coordinate), 2) + pow((mi.y_coordinate - mj.y_coordinate), 2) + pow((mi.z_coordinate - mj.z_coordinate), 2))
+    # distance **= 1/2
+    param **= 2/3
+    return abs(mj.density - mi.density)*param/distance
 
+
+def max_distance_dif(M_regions):
+    max_diff = 0
+    for i in range(len(M_regions)-1):
+        for j in range(i+1, len(M_regions)):
+            distance = math.sqrt(pow((M_regions[i].x_coordinate - M_regions[j].x_coordinate), 2) + pow((M_regions[i].y_coordinate - M_regions[j].y_coordinate), 2) + pow((M_regions[i].z_coordinate - M_regions[j].z_coordinate), 2))
+            if distance > max_diff:
+                max_diff = distance
+    max_diff **= 1/2
+    return max_diff
+
+def max_density_dif(M_regions):
+    max_den_diff = 0
+    for i in range(len(M_regions)-1):
+        for j in range(i+1, len(M_regions)):
+            den_diff = M_regions[i].density - M_regions[j].density
+            if den_diff > max_den_diff:
+                max_den_diff = den_diff
+    return max_den_diff
+
+
+# def min_density_dif(M_regions):
+#     min_den_diff = 99999
+#     for i in range(len(M_regions) - 1):
+#         for j in range(i + 1, len(M_regions)):
+#             den_diff = M_regions[i].density - M_regions[j].density
+#             if den_diff < min_den_diff:
+#                 min_den_diff = den_diff
+#     return min_den_diff
 
 def readData(matrix):       # Read the data from mrc.data to voxel object and save in tArray
     tArray = []             # list holds all the voxels with density>=threshold
@@ -151,11 +181,11 @@ def gen_regions(matrix,tArray):      # generate regions for each block
     return [region_to_lm, regions]
 
 
-def merge_region(M_regions, regions):
+def merge_region(M_regions, regions, imgmatrix, n_regions):
     # t1 = datetime.now()
     # reorder M in increasing order based on density,
-    temp = sorted(M_regions, key=lambda voxel:voxel.density)     # mSorted=sorted(region_to_lm, key=lambda voxel: voxel.density)
-    M_regions = temp
+    # temp = sorted(M_regions, key=lambda voxel:voxel.density)     # mSorted=sorted(region_to_lm, key=lambda voxel: voxel.density)
+    # M_regions = temp
     # t2 = datetime.now()
     # delta = t2 - t1
     # df['region sort']=delta
@@ -163,9 +193,23 @@ def merge_region(M_regions, regions):
     # calculate the gaussian filtered image, modify sigma, truncate value to optimize
     count = 0
     # imgmatrix = img_matrix
-    while len(M_regions) > 15:
+    for i in range(2):
+        imgmatrix = gaussian_filter(imgmatrix, sigma=1, mode="constant", cval=0.0, truncate=4.0)
+    for i in range(0, len(M_regions)):
+        xc = M_regions[i].x_coordinate
+        yc = M_regions[i].y_coordinate
+        zc = M_regions[i].z_coordinate
+        M_regions[i].density = imgmatrix[xc, yc, zc]
+    M_regions = sorted(M_regions, key=lambda voxel: voxel.density)
+    max_density_diff = M_regions[-1].density - M_regions[0].density
+    # print(max_density_diff)
+    max_distance_diff = max_distance_dif(M_regions)
+    # print(max_distance_diff)
+    normal_parameter = max_distance_diff / max_density_diff
+
+    while len(M_regions) > 2 * n_regions -1:
         # t1 = datetime.now()
-        # # imgmatrix = gaussian_filter(imgmatrix, sigma=1, mode="constant", cval=0.0, truncate=4.0)
+        # #
         # t2 = datetime.now()
         # delta = t2 - t1
         # smooth = 'smooth' + str(count)
@@ -192,7 +236,7 @@ def merge_region(M_regions, regions):
             gra = dict()
             for j in range(i + 1, p):
                 # dictionary to keep all gradients for mi
-                gra[j] = gradient(M_regions[i], M_regions[j])
+                gra[j] = gradient(M_regions[i], M_regions[j],normal_parameter)
             # find steepest ascent, the max value of g
             # print(gra)
             k = max(gra, key=gra.get)
@@ -210,12 +254,12 @@ def merge_region(M_regions, regions):
         del M_regions[0:q]
 
     num_region = len(M_regions)
-    if num_region > 8:
-        num_pair = num_region - 8
-        M_regions, regions = merge_pair(M_regions, regions, num_pair)
+    if num_region > n_regions:
+        num_pair = num_region - n_regions
+        M_regions, regions = merge_pair(M_regions, regions, num_pair, normal_parameter)
     return [M_regions, regions]
 
-def merge_pair(M_regions, regions, num_pair):
+def merge_pair(M_regions, regions, num_pair, normal_param):
     num_region = len(M_regions)
     # M=[[0 for j in range(num_region)] for i in range(num_region)]
     M = []
@@ -225,10 +269,10 @@ def merge_pair(M_regions, regions, num_pair):
             if (j <= i):
                 steepascentlst.append(0)
             else:
-                gra = gradient(M_regions[i], M_regions[j])
+                gra = gradient(M_regions[i], M_regions[j], normal_param)
                 steepascentlst.append(gra)
         M.append(steepascentlst)
-
+    print(num_pair)
     pairs = []
     for i in range(num_pair):
         m = (0,0)
@@ -242,21 +286,29 @@ def merge_pair(M_regions, regions, num_pair):
             for k in range(len(M[j])):
                 if j == toreset or k == toreset:
                     M[j][k]=0
+    print(pairs)
     todelete = []
     for item in pairs:
         a, b = item[0], item[1]
+        # print(a, b)
         if a < b:
+            a, b = M_regions[a].regionID, M_regions[b].regionID
+            # print("region id")
+            # print(a, b)
             for v in regions[a]:
                 v.regionID = b
             regions[b].extend(regions[a])
             regions = delete_key(a, regions)
-            todelete.append(M_regions[a])
+            todelete.append(M_regions[item[0]])
         else:
+            a, b = M_regions[a].regionID, M_regions[b].regionID
+            # print("region id")
+            # print(a, b)
             for v in regions[b]:
                 v.regionID = a
             regions[a].extend(regions[b])
             regions = delete_key(b, regions)
-            todelete.append(M_regions[b])
+            todelete.append(M_regions[item[1]])
     temp_M = []
     for item in M_regions:
         if item not in todelete:
@@ -270,7 +322,7 @@ def outputregion(regions, shape):       # output segment regions
     for key in regions:
         fname='emdr'+str(key)+'.mrc'
         # generate mrcfile for each region
-        mrc_new = mrcfile.new('mrcfilestest/emd4297smooththreesingle_nospon_2_3/{}'.format(fname), overwrite=True)
+        mrc_new = mrcfile.new('mrcfilestest/emd0414smoothtwicesingle_nospon_normal_param23_6/{}'.format(fname), overwrite=True)
         mrc_new.set_data(np.zeros(shape, dtype=np.float32))
         mrc_new.voxel_size = mrc.voxel_size
         for v in regions[key]:
@@ -279,13 +331,14 @@ def outputregion(regions, shape):       # output segment regions
 
 
 intialize()
+n = int(input("n-- number of regions final: "))
 # t1 = datetime.now()
 tArray = readData(img_matrix)
 # t2 = datetime.now()
 # delta = t2-t1
 # df['read data']=delta
 region_to_lm, regions = gen_regions(img_matrix, tArray)
-M_regions, regions = merge_region(region_to_lm, regions)
+M_regions, regions = merge_region(region_to_lm, regions, img_matrix, n)
 # df.to_csv('emd4297smoothtwicesingleoutput.csv')
 outputregion(regions, shape)
 mrc.close()

@@ -24,7 +24,7 @@ def get_region_set(fname, threshold):
     row = temp_img.shape[0]
     col = temp_img.shape[1]
     dep = temp_img.shape[2]
-    print(row, col, dep)
+    # print(row, col, dep)
     # read data
     for z in range(0, dep):
         for y in range(0, col):
@@ -40,33 +40,49 @@ def get_region_set(fname, threshold):
 
 
 # get dictionary of templates with pairs of "filename:set of voxels"
-def get_template_regiondict(dname, threshold):
+def get_regiondict(dname, threshold):
     template_regionsetdict = {}
     dname = os.path.join(This_Folder, dname)
     for file in os.listdir(dname):
         if file.endswith(".mrc"):
+            fname = file
             file = dname + '/' + file
             templateregionset = get_region_set(file, threshold)
-            template_regionsetdict.update({file:templateregionset})
+            template_regionsetdict.update({fname:templateregionset})
     return template_regionsetdict
 
-fname = input("choose the test region file:")
 
-dname = input("choose the templates directory:")
+output_path = "Output"
+testdir = input("choose the test region directory:")
+testdir = "mrcfilestest/"+ testdir
+tempdir = input("choose the templates directory:")
+tempdir = "mrcfilestest/"+ tempdir
+threshold = float(input("input the threshold value:"))
+testregiondict = get_regiondict(testdir, threshold)
 
-testregionset = get_region_set(fname, threshold=0.12)
-print(len(testregionset))
-templateregiondict = get_template_regiondict(dname, threshold=0.12)
-df = pd.DataFrame({"Name":[fname]})
-for templatename, templateregionset in templateregiondict.items():
-    intersection = testregionset.intersection(templateregionset)
+templateregiondict = get_regiondict(tempdir, threshold)
+df = pd.DataFrame()
 
-    # get the number of elements in test region set and template region sets
-    num_intersection = len(intersection)
-    num_templateset = len(templateregionset)
-    print(num_intersection, num_templateset)
-    percentage = format((num_intersection / num_templateset),'.2%')
-    print(percentage)
-    df[fname]=percentage
+for testname, testregionset in testregiondict.items():
+    testname = "dc_"+ testname
+    column_lst = []
+    output_list = []
+    for templatename, templateregionset in templateregiondict.items():
+        templatename = "non_dc_" + templatename
+        column_lst.append(templatename)
+        intersection = testregionset.intersection(templateregionset)
+        # get the number of elements in test region set and template region sets
+        num_intersection = len(intersection)
+        num_templateset = len(templateregionset)
+        print(num_intersection, num_templateset)
+        percentage = format((num_intersection / num_templateset),'.2%')
+        output_list.append(percentage)
+        print(percentage)
+    df[testname]=output_list
+df = df.transpose()
+df = pd.DataFrame(df.values, df.index, column_lst)
+print(df)
+
+df.to_csv(os.path.join(output_path, r'emd0414smoothtwicesparam23_6.csv'))
 
 
