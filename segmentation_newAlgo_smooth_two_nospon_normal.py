@@ -21,7 +21,8 @@ class Voxel(object):
 # initialize program and ask user to input filename
 def intialize():        # initialize program
     global mrc, img_matrix, shape, nx, ny, nz, df, unit, global_regionid, cube_id, threshold
-    fname = 'mrcfiles/emd0414.mrc'
+    fname = input("choose file name: ")
+    fname = "mrcfiles/" + fname
     mrc = mrcfile.open(fname, mode='r+')
     img_matrix = np.copy(mrc.data)
     threshold = img_matrix.mean()
@@ -281,7 +282,7 @@ def merge_pair(M_regions, regions, num_pair, normal_param):
                 gra = gradient(M_regions[i], M_regions[j], normal_param)
                 steepascentlst.append(gra)
         M.append(steepascentlst)
-    print(num_pair)
+    # print(num_pair)
     pairs = []
     for i in range(num_pair):
         m = (0, 0)
@@ -296,7 +297,7 @@ def merge_pair(M_regions, regions, num_pair, normal_param):
                 if j == toreset or k == toreset:
                     M[j][k] = 0
     todelete = []
-    print(pairs)
+    # print(pairs)
     for item in pairs:
         a, b = item[0], item[1]
         # print(a, b)
@@ -363,9 +364,9 @@ n2 = int(input("n2-- number of regions final: "))
 cube_id = -1
 regions = dict()
 region_to_lm = []
-for k in range(0, nz-unit, unit):
-    for j in range(0, ny-unit, unit):
-        for i in range(0, nx-unit, unit):
+for k in range(0, nz, unit):
+    for j in range(0, ny, unit):
+        for i in range(0, nx, unit):
             cube_id += 1
             i_boundary, j_boundary, k_boundary = min(i+unit,nx), min(j+unit,ny), min(k+unit,nz)
             temp_matrix = img_matrix[i:i_boundary, j:j_boundary, k:k_boundary]

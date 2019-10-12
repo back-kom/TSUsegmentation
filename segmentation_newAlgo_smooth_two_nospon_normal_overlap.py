@@ -23,7 +23,8 @@ class Voxel(object):
 # initialize program and ask user to input filename
 def intialize():        # initialize program
     global mrc, img_matrix, shape, nx, ny, nz, df, unit, global_regionid, cube_id, threshold
-    fname = 'mrcfiles/emd4297.mrc'
+    fname = input("choose file name: ")
+    fname = "mrcfiles/" + fname
     mrc = mrcfile.open(fname, mode='r+')
     img_matrix = np.copy(mrc.data)
     threshold = img_matrix.mean()
@@ -399,12 +400,12 @@ n2 = int(input("n2-- number of regions final: "))
 cube_id = -1
 regions = dict()
 region_to_lm = []
-# unit2 = int(round(unit*1.2))
-# step = int(round(unit * 1.4))
-step = unit
-for k in range(0, nz-unit, unit):
-    for j in range(0, ny-unit, unit):
-        for i in range(0, nx-unit, unit):
+unit2 = int(round(unit*1.2))
+step = int(round(unit * 1.4))
+# step = unit
+for k in range(0, nz, unit2):
+    for j in range(0, ny, unit2):
+        for i in range(0, nx, unit2):
             cube_id += 1
             i_boundary, j_boundary, k_boundary = min(i+step,nx), min(j+step,ny), min(k+step,nz)
             temp_matrix = img_matrix[i:i_boundary, j:j_boundary, k:k_boundary]

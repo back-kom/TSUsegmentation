@@ -20,7 +20,8 @@ class Voxel(object):
 # initialize program and ask user to input filename
 def intialize():        # initialize program
     global mrc, img_matrix, shape, threshold, nx, ny, nz, df    # global variables
-    fname = 'mrcfiles/emd4297.mrc'
+    fname = input("choose file name: ")
+    fname = "mrcfiles/" + fname
     mrc = mrcfile.open(fname, mode='r+')
     img_matrix = np.copy(mrc.data)
     # for i in range(3):

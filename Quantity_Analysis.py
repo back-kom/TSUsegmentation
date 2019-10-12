@@ -57,7 +57,11 @@ testdir = input("choose the test region directory:")
 testdir = "mrcfilestest/"+ testdir
 tempdir = input("choose the templates directory:")
 tempdir = "mrcfilestest/"+ tempdir
-threshold = float(input("input the threshold value:"))
+file = input("choose the original mrc file:")
+file = "mrcfiles/" + file
+mrc = mrcfile.open(file)
+# threshold = float(input("input the threshold value:"))
+threshold = mrc.data.mean()
 testregiondict = get_regiondict(testdir, threshold)
 
 templateregiondict = get_regiondict(tempdir, threshold)
@@ -77,12 +81,13 @@ for testname, testregionset in testregiondict.items():
         print(num_intersection, num_templateset)
         percentage = format((num_intersection / num_templateset),'.2%')
         output_list.append(percentage)
-        print(percentage)
+        # print(percentage)
     df[testname]=output_list
 df = df.transpose()
 df = pd.DataFrame(df.values, df.index, column_lst)
 print(df)
 
-df.to_csv(os.path.join(output_path, r'emd0414smoothtwicesparam23_6.csv'))
+
+df.to_csv(os.path.join(output_path, r'emd0414smoothtwicesparam23_6_overlap.csv'))
 
 
