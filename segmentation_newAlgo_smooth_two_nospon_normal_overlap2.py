@@ -4,8 +4,8 @@ import numpy as np
 from scipy.ndimage import gaussian_filter
 import math
 import copy
-# from datetime import datetime
-# import pandas as pd
+from datetime import datetime
+import pandas as pd
 
 
 # data structure holds voxel information
@@ -32,8 +32,8 @@ def intialize():        # initialize program
     nz = mrc.header.nz
     shape = (nx, ny, nz)
     unit = int(math.sqrt(nx))
-    # df = pd.DataFrame({"Name":[fname]})
-    # df['region number in divide'] = "8/8"
+    df = pd.DataFrame({"Name":[fname]})
+    df['region number in divide'] = "4_4"
     global_regionid = -1
 
 
@@ -364,7 +364,7 @@ def on_boundary(voxel, matrix):
 def outputregion(regions, shape):       # output segment regions
     for key in regions:
         fname='emdr'+str(key)+'.mrc'
-        mrc_new = mrcfile.new('mrcfilestest/emd0414smooth_twice_dc_nospon_normal_param23_overlap_6_new/{}'.format(fname), overwrite=True)
+        mrc_new = mrcfile.new('mrcfilestest/emd4297/newalgo_overlap_smooth_2_param23_r4_rep1/{}'.format(fname), overwrite=True)
         mrc_new.set_data(np.zeros(shape, dtype=np.float32))
         mrc_new.voxel_size = mrc.voxel_size
         for v in regions[key]:
@@ -380,6 +380,7 @@ cube_id = -1
 regions = dict()
 region_to_lm = []
 v_on_boundary = []
+merge_t1 = datetime.now()
 for k in range(0, nz, unit):
     for j in range(0, ny, unit):
         for i in range(0, nx, unit):
@@ -396,12 +397,16 @@ for k in range(0, nz, unit):
                 region_to_lm.extend(temp_M_region)
             else:
                 continue
-
+merge_t2 = datetime.now()
+delta = (merge_t2-merge_t1).total_seconds()
+df['local_merge']=delta
 print("length of local max: " + str(len(region_to_lm)))
 print("number of regions:" + str(len(regions)))
-print(len(v_on_boundary))
+# print(len(v_on_boundary))
 region_num = max(regions, key = int)
-print(region_num)
+# print(region_num)
+
+merge_t1 = datetime.now()
 for v in v_on_boundary:
     region_num += 1
     v.regionID = region_num
@@ -411,6 +416,9 @@ for v in v_on_boundary:
 print("length of local max: " + str(len(region_to_lm)))
 print("number of regions:" + str(len(regions)))
 region_to_lm, regions = merge_region(region_to_lm, regions, img_matrix, n2)
+merge_t2 = datetime.now()
+delta = (merge_t2-merge_t1).total_seconds()
+df['global_merge']=delta
 outputregion(regions, shape)
-# df.to_csv('emd4297divide_new_gradient_output08212019.csv')
+df.to_csv('mrcfilestest/emd4297/newalgo_overlap_smooth_2_param23_r4_rep1/newalgo_overlap_r4_rep1.csv')
 print("done")

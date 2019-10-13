@@ -31,8 +31,8 @@ def intialize():        # initialize program
     ny = mrc.header.ny
     nz = mrc.header.nz
     shape = (nx, ny, nz)
-    # df = pd.DataFrame({"Name":[fname]})     # dateframe to record time
-
+    df = pd.DataFrame({"Name":[fname]})     # dateframe to record time
+    df['region number'] = "4"
 
 def delete_key(key, dictionary):        # delete key in dictionary
     d = dictionary
@@ -87,15 +87,6 @@ def max_density_dif(M_regions):
     return max_den_diff
 
 
-# def min_density_dif(M_regions):
-#     min_den_diff = 99999
-#     for i in range(len(M_regions) - 1):
-#         for j in range(i + 1, len(M_regions)):
-#             den_diff = M_regions[i].density - M_regions[j].density
-#             if den_diff < min_den_diff:
-#                 min_den_diff = den_diff
-#     return min_den_diff
-
 def readData(matrix):       # Read the data from mrc.data to voxel object and save in tArray
     tArray = []             # list holds all the voxels with density>=threshold
     # regionx = []          # list holds all the voxels with density<threshold
@@ -118,12 +109,12 @@ def readData(matrix):       # Read the data from mrc.data to voxel object and sa
 
 
 def gen_regions(matrix,tArray):      # generate regions for each block
-    # t1 = datetime.now()
+    t1 = datetime.now()
     # sort array decreasing order based on density; stable
     tSortedArray = sorted(tArray, key=lambda voxel: voxel.density, reverse=True)
-    # t2 = datetime.now()
-    # delta = t2 - t1         # record sort time
-    # df['sorted']=(delta)
+    t2 = datetime.now()
+    delta = (t2 - t1).total_seconds()         # record sort time
+    df['sorted']=(delta)
     # print("sorted done: " + str(delta))
     # record region number
     regionNum = -1
@@ -133,7 +124,7 @@ def gen_regions(matrix,tArray):      # generate regions for each block
     regions = dict()
     # find regions for each voxel
     size = matrix.size
-    # t1 = datetime.now()
+    t1 = datetime.now()
     for i in range(0, size):
         # print("number: " + str(i))
         v = tSortedArray[i]
@@ -176,9 +167,9 @@ def gen_regions(matrix,tArray):      # generate regions for each block
         # are all zero, no need to check
         else:
             break
-    # t2 = datetime.now()
-    # delta = t2 - t1
-    # df['get_region'] = delta
+    t2 = datetime.now()
+    delta = (t2 - t1).total_seconds()
+    df['get_region'] = delta
     return [region_to_lm, regions]
 
 
@@ -195,19 +186,32 @@ def merge_region(M_regions, regions, imgmatrix, n_regions):
     count = 0
     # imgmatrix = img_matrix
     for i in range(2):
+        t1 = datetime.now()
         imgmatrix = gaussian_filter(imgmatrix, sigma=1, mode="constant", cval=0.0, truncate=4.0)
+        t2 = datetime.now()
+        smooth = 'smooth' + str(i)
+        delta = (t2 - t1).total_seconds()
+        df[smooth] = delta
+    t1 = datetime.now()
     for i in range(0, len(M_regions)):
         xc = M_regions[i].x_coordinate
         yc = M_regions[i].y_coordinate
         zc = M_regions[i].z_coordinate
         M_regions[i].density = imgmatrix[xc, yc, zc]
+    t2 = datetime.now()
+    delta = (t2 - t1).total_seconds()
+    df['density updated'] = delta
+    t1 = datetime.now()
     M_regions = sorted(M_regions, key=lambda voxel: voxel.density)
+    t2 = datetime.now()
+    delta = (t2 - t1).total_seconds()
+    df['region sort']=delta
     max_density_diff = M_regions[-1].density - M_regions[0].density
     # print(max_density_diff)
     max_distance_diff = max_distance_dif(M_regions)
     # print(max_distance_diff)
     normal_parameter = max_distance_diff / max_density_diff
-
+    t1 = datetime.now()
     while len(M_regions) > 2 * n_regions -1:
         # t1 = datetime.now()
         # #
@@ -251,13 +255,16 @@ def merge_region(M_regions, regions, imgmatrix, n_regions):
             regions[k].extend(regions[temp])
             # remove checked regions
             regions = delete_key(temp, regions)
-            # t5 = datetime.now()
+            t5 = datetime.now()
         del M_regions[0:q]
 
     num_region = len(M_regions)
     if num_region > n_regions:
         num_pair = num_region - n_regions
         M_regions, regions = merge_pair(M_regions, regions, num_pair, normal_parameter)
+    t2 = datetime.now()
+    delta = (t2 - t1).total_seconds()
+    df['merge']=delta
     return [M_regions, regions]
 
 def merge_pair(M_regions, regions, num_pair, normal_param):
@@ -323,7 +330,7 @@ def outputregion(regions, shape):       # output segment regions
     for key in regions:
         fname='emdr'+str(key)+'.mrc'
         # generate mrcfile for each region
-        mrc_new = mrcfile.new('mrcfilestest/emd0414smoothtwicesingle_nospon_normal_param23_6/{}'.format(fname), overwrite=True)
+        mrc_new = mrcfile.new('mrcfilestest/emd4297/oldalgo_smooth_2_param23_r4_rep1/{}'.format(fname), overwrite=True)
         mrc_new.set_data(np.zeros(shape, dtype=np.float32))
         mrc_new.voxel_size = mrc.voxel_size
         for v in regions[key]:
@@ -333,14 +340,14 @@ def outputregion(regions, shape):       # output segment regions
 
 intialize()
 n = int(input("n-- number of regions final: "))
-# t1 = datetime.now()
+t1 = datetime.now()
 tArray = readData(img_matrix)
-# t2 = datetime.now()
-# delta = t2-t1
-# df['read data']=delta
+t2 = datetime.now()
+delta = (t2-t1).total_seconds()
+df['read data']=delta
 region_to_lm, regions = gen_regions(img_matrix, tArray)
 M_regions, regions = merge_region(region_to_lm, regions, img_matrix, n)
-# df.to_csv('emd4297smoothtwicesingleoutput.csv')
+df.to_csv('mrcfilestest/emd4297/oldalgo_smooth_2_param23_r4_rep1/oldalgo_r4_rep1.csv')
 outputregion(regions, shape)
 mrc.close()
 print('done')

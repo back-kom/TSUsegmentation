@@ -3,8 +3,8 @@ import mrcfile
 import numpy as np
 from scipy.ndimage import gaussian_filter
 import math
-# from datetime import datetime
-# import pandas as pd
+from datetime import datetime
+import pandas as pd
 
 
 # data structure holds voxel information
@@ -31,8 +31,8 @@ def intialize():        # initialize program
     nz = mrc.header.nz
     shape = (nx, ny, nz)
     unit = int(math.sqrt(nx))
-    # df = pd.DataFrame({"Name":[fname]})
-    # df['region number in divide'] = "8/8"
+    df = pd.DataFrame({"Name":[fname]})
+    df['region number in divide'] = "4_4"
     global_regionid = -1
 
 
@@ -117,7 +117,7 @@ def gen_regions(matrix,tArray, g_regionid):      # generate regions for each blo
     # sort array decreasing order based on density; stable
     tSortedArray = sorted(tArray, key=lambda voxel: voxel.density, reverse=True)
     # t2 = datetime.now()
-    # delta = t2 - t1
+    # delta = (t2 - t1).total_seconds()
     # df['sort']=(delta)
     #print("sorted done: " + str(delta))
     global global_regionid
@@ -177,7 +177,7 @@ def gen_regions(matrix,tArray, g_regionid):      # generate regions for each blo
         else:
             break
     # t2 = datetime.now()
-    # delta = t2 - t1
+    # delta = (t2 - t1).total_seconds()
     # df['get_region'] =delta
     # print("generate regions: " + str(delta))
     return [region_to_lm, regions]
@@ -349,7 +349,7 @@ def reverse_coordinate(temp_M_region, temp_regions, i_step, j_step, k_step):
 def outputregion(regions, shape):       # output segment regions
     for key in regions:
         fname='emdr'+str(key)+'.mrc'
-        mrc_new = mrcfile.new('mrcfilestest/emd0414smooth_twice_dc_nospon_normal_param23_6/{}'.format(fname), overwrite=True)
+        mrc_new = mrcfile.new('mrcfilestest/emd4297/newalgo_smooth_2_param23_r4_rep1/{}'.format(fname), overwrite=True)
         mrc_new.set_data(np.zeros(shape, dtype=np.float32))
         mrc_new.voxel_size = mrc.voxel_size
         for v in regions[key]:
@@ -364,6 +364,7 @@ n2 = int(input("n2-- number of regions final: "))
 cube_id = -1
 regions = dict()
 region_to_lm = []
+merge_t1 = datetime.now()
 for k in range(0, nz, unit):
     for j in range(0, ny, unit):
         for i in range(0, nx, unit):
@@ -380,11 +381,16 @@ for k in range(0, nz, unit):
                 region_to_lm.extend(temp_M_region)
             else:
                 continue
-
+merge_t2 = datetime.now()
+delta = (merge_t2-merge_t1).total_seconds()
+df['local_merge']=delta
 print("length of local max: " + str(len(region_to_lm)))
 print("number of regions:" + str(len(regions)))
-
+merge_t1 = datetime.now()
 region_to_lm, regions = merge_region(region_to_lm, regions, img_matrix, n2)
+merge_t2 = datetime.now()
+delta = (merge_t2-merge_t1).total_seconds()
+df['global_merge']=delta
 outputregion(regions, shape)
-# df.to_csv('emd4297divide_new_gradient_output08212019.csv')
+df.to_csv('mrcfilestest/emd4297/newalgo_smooth_2_param23_r4_rep1/newalgo_r4_rep1.csv')
 print("done")

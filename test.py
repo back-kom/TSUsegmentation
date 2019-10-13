@@ -20,7 +20,7 @@ import numpy as np
 import math
 
 
-fname1 = 'mrcfiles/emd4297.mrc'
+fname1 = 'mrcfiles/emd0414.mrc'
 # fname3 = 'SourceFiles/emd4297segger6steps/emd_4297_region_1741.mrc'
 # fname2 = 'mrcfiles/emd0414.mrc'
 # fname4 = 'SourceFiles/emd4297segger6steps/emd_4297_region_1743.mrc'
@@ -54,21 +54,22 @@ mrc1 = mrcfile.open(fname1, mode='r+')
 # print(mrc9.header)
 # print(mrc10.header)
 
-img_matrix = np.copy(mrc1.data)
-threshold = img_matrix.mean()
-nx = mrc1.header.nx
-print("nx: " + str(nx))
-ny = mrc1.header.ny
-nz = mrc1.header.nz
-shape = (nx, ny, nz)
-unit = 13
-print("n: " + str(unit))
-
-for k in range(0, nz, unit):
-    for j in range(0, ny, unit):
-        for i in range(0, nx, unit):
-            i_boundary, j_boundary, k_boundary = min(i+unit,nx), min(j+unit,ny), min(k+unit,nz)
-            temp_matrix = img_matrix[i:i_boundary, j:j_boundary, k:k_boundary]
-            print("x of cube: " + str(len(temp_matrix)))
-            print("y of cube: " + str(len(temp_matrix[0])))
-            print("z of cube: " + str(len(temp_matrix[0][0])))
+print(mrc1.header.nx)
+# img_matrix = np.copy(mrc1.data)
+# threshold = img_matrix.mean()
+# nx = mrc1.header.nx
+# print("nx: " + str(nx))
+# ny = mrc1.header.ny
+# nz = mrc1.header.nz
+# shape = (nx, ny, nz)
+# unit = 13
+# print("n: " + str(unit))
+#
+# for k in range(0, nz, unit):
+#     for j in range(0, ny, unit):
+#         for i in range(0, nx, unit):
+#             i_boundary, j_boundary, k_boundary = min(i+unit,nx), min(j+unit,ny), min(k+unit,nz)
+#             temp_matrix = img_matrix[i:i_boundary, j:j_boundary, k:k_boundary]
+#             print("x of cube: " + str(len(temp_matrix)))
+#             print("y of cube: " + str(len(temp_matrix[0])))
+#             print("z of cube: " + str(len(temp_matrix[0][0])))
